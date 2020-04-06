@@ -46,14 +46,7 @@ ecore = function () {
 
 		// automatically called when creating an object
 		initialize: function () {
-
-			this.on('change:name change:attributes change:methods', function () {
-				this.updateRectangles();
-				this.trigger('ecore-update');
-			}, this);
-
 			this.updateRectangles();
-
 			joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
 		},
 
@@ -116,21 +109,6 @@ ecore = function () {
 			});
 			return width + widthMargin;
 		}
-
-	});
-
-	var EClassView = joint.dia.ElementView.extend({
-
-		initialize: function () {
-
-			ElementView.prototype.initialize.apply(this, arguments);
-
-			// TODO: autosize may be achieved in these methods. Investigate
-			this.listenTo(this.model, 'ecore-update', function () {
-				this.update();
-				this.resize();
-			});
-		}
 	});
 
 	// TODO: to make easier the managements of subtypes, the generalizations
@@ -153,7 +131,6 @@ ecore = function () {
 
 	return {
 		EClass: EClass,
-		EClassView: EClassView,
 		Generalization: Generalization,
 		Composition: Composition,
 		Association: Association
