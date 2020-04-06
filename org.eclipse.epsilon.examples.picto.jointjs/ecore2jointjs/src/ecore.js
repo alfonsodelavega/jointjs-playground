@@ -6,9 +6,9 @@ ecore = function () {
 		attrs: {
 			rect: { 'width': 200 },
 
-			'.eclass-name-rect': { 'stroke': 'black', 'stroke-width': 2, 'fill': 'white' },
-			'.eclass-attrs-rect': { 'stroke': 'black', 'stroke-width': 2, 'fill': 'white' },
-			'.eclass-methods-rect': { 'stroke': 'black', 'stroke-width': 2, 'fill': 'white' },
+			'.eclass-name-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
+			'.eclass-attrs-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
+			'.eclass-methods-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
 
 			'.eclass-name-text': {
 				'ref': '.eclass-name-rect',
@@ -89,7 +89,6 @@ ecore = function () {
 
 	});
 
-	// TODO: this may be simplified out if no changes to the class name, attrs or methods are allowed
 	var EClassView = joint.dia.ElementView.extend({
 
 		initialize: function () {

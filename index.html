@@ -7,21 +7,26 @@
 	<title>jointjs diagram test</title>
 
 	<link rel="stylesheet" type="text/css" href="node_modules/jointjs/dist/joint.css" />
-	<link rel="stylesheet" type="text/css" href="css/ecorecd.css" />
+	<link
+			rel="stylesheet" type="text/css"
+			href="org.eclipse.epsilon.examples.picto.jointjs/ecore2jointjs/css/ecorecd.css" />
 </head>
 
 <body>
 	<div id="paper"></div>
 
+	<!-- Dependencies -->
 	<script src="node_modules/jquery/dist/jquery.js"></script>
 	<script src="node_modules/lodash/lodash.js"></script>
 	<script src="node_modules/backbone/backbone.js"></script>
 	<script src="node_modules/dagre/dist/dagre.js"></script>
-
 	<script src="node_modules/jointjs/dist/joint.js"></script>
 
-	<script src="src/ecore.js"></script>
-	<script src="src/classDiagram.js"></script>
+	<!-- Ecore shapes based in the uml plugin from jointjs -->
+	<script src="org.eclipse.epsilon.examples.picto.jointjs/ecore2jointjs/src/ecore.js"></script>
+
+	<!-- Defines the class diagram -->
+	<script src="index.js"></script>
 </body>
 
 </html>
