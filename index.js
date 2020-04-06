@@ -1,34 +1,24 @@
 var graph = new joint.dia.Graph();
 
-new joint.dia.Paper({
+var paper = new joint.dia.Paper({
 	el: document.getElementById('paper'),
 	model: graph,
 	width: 1000,  //TODO: automatic size (responsive to resizes, and node movements)
 	height: 600,
-	gridSize: 1
+	gridSize: 5
 	, defaultAnchor: {
 		name: 'perpendicular'
 	}
-
-	// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#routers.orthogonal
+	// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#routers.manhattan
 	, defaultRouter: {
-		name: 'orthogonal',
+		name: 'manhattan',
 		args: {
-			padding: 10
+			step: 5,
+			padding: 20
 		}
 	}
-	// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#routers.manhattan
-	// , defaultRouter: {
-	// 	name: 'manhattan',
-	// 	args: {
-	// 		padding: 10
-	// 	}
-	// }
-
 	// , interactive: false // disables ALL interactions with the graph
 });
-
-// var uml = joint.shapes.uml;
 
 var classes = {}
 
@@ -112,6 +102,14 @@ var relations = [new ecore.Generalization({
 
 Object.keys(relations).forEach(function (key) {
 	graph.addCell(relations[key]);
+});
+
+// avoid links accross classes on movement
+//   this might penalize performance if there are many links
+graph.on('change:position', function(cell) {
+	Object.keys(relations).forEach(function (key) {
+		paper.findViewByModel(relations[key]).update();
+	});
 });
 
 // automatic layout of the diagram

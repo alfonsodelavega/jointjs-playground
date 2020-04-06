@@ -36,8 +36,8 @@ ecore = function () {
 		methods: []
 	}, {
 		markup: [
-			'<g>',
-				'<g>',
+			'<g class="rotatable">',
+				'<g class="scalable">',
 					'<rect class="eclass-name-rect"/><rect class="eclass-attrs-rect"/><rect class="eclass-methods-rect"/>',
 				'</g>',
 				'<text class="eclass-name-text"/><text class="eclass-attrs-text"/><text class="eclass-methods-text"/>',
