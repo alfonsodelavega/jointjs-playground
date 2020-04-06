@@ -54,17 +54,12 @@ var classes = getVisibleClasses();%]
 
 		var classes = {};
 
-		[%for (c in classes) { %]
+		[%for (c in classes) {%]
 			[** Create a node for the class **]
-			classes["[%= c.name %]"] = new ecore.EClass({
-				size : {
-					width : 220,
-					height : 100
-				},
+			classes["[%=c.name%]"] = new ecore.EClass({
 				name : '[%= c.name %]',
-				attributes : ["[%=c.getAttributes()%]"],
+				attributes : ["[%= c.getAttributes() %]"],
 			});
-
 		[%}%]
 
 		Object.keys(classes).forEach(function(key) {

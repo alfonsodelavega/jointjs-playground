@@ -1,11 +1,8 @@
 // custom shapes to visualise ecore diagrams
-// TODO: change property names from the original uml ones to adequate ecore ones
 ecore = function () {
 
 	var EClass = joint.shapes.basic.Generic.define('ecore.EClass', {
 		attrs: {
-			rect: { 'width': 200 },
-
 			'.eclass-name-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
 			'.eclass-attrs-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
 			'.eclass-methods-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
@@ -18,34 +15,36 @@ ecore = function () {
 				'y-alignment': 'middle',
 				'font-weight': 'bold',
 				'fill': 'black',
-				// TODO: fix this to a proper font size/style (easier if autosize works!)
-				'font-size': 14, 'font-family': 'Times New Roman'
+				'font-size': 16, 'font-family': 'monospace'
 			},
 			'.eclass-attrs-text': {
 				'ref': '.eclass-attrs-rect', 'ref-y': 5, 'ref-x': 5,
 				'fill': 'black',
-				'font-size': 12, 'font-family': 'Times New Roman'
+				'font-size': 14, 'font-family': 'monospace'
 			},
 			'.eclass-methods-text': {
 				'ref': '.eclass-methods-rect', 'ref-y': 5, 'ref-x': 5,
 				'fill': 'black',
-				'font-size': 12, 'font-family': 'Times New Roman'
+				'font-size': 14, 'font-family': 'monospace'
 			}
 		},
+
+		size: { }, // fill this size attribute for autolayout
 
 		name: [],
 		attributes: [],
 		methods: []
 	}, {
 		markup: [
-			'<g class="rotatable">',
-			'<g class="scalable">',
-			'<rect class="eclass-name-rect"/><rect class="eclass-attrs-rect"/><rect class="eclass-methods-rect"/>',
-			'</g>',
-			'<text class="eclass-name-text"/><text class="eclass-attrs-text"/><text class="eclass-methods-text"/>',
+			'<g>',
+				'<g>',
+					'<rect class="eclass-name-rect"/><rect class="eclass-attrs-rect"/><rect class="eclass-methods-rect"/>',
+				'</g>',
+				'<text class="eclass-name-text"/><text class="eclass-attrs-text"/><text class="eclass-methods-text"/>',
 			'</g>'
 		].join(''),
 
+		// automatically called when creating an object
 		initialize: function () {
 
 			this.on('change:name change:attributes change:methods', function () {
@@ -72,19 +71,50 @@ ecore = function () {
 				{ type: 'methods', text: this.get('methods') }
 			];
 
-			var offsetY = 0;
+			var rectWidth = this.calculateWidth(rects);
+
+			var accumulatedHeight = 0;
 
 			rects.forEach(function (rect) {
 
 				var lines = Array.isArray(rect.text) ? rect.text : [rect.text];
-				var rectHeight = lines.length * 20 + 20;
+				var rectHeight = lines.length * 14 + 14; // update with font sizes
+
 
 				attrs['.eclass-' + rect.type + '-text'].text = lines.join('\n');
 				attrs['.eclass-' + rect.type + '-rect'].height = rectHeight;
-				attrs['.eclass-' + rect.type + '-rect'].transform = 'translate(0,' + offsetY + ')';
+				attrs['.eclass-' + rect.type + '-rect'].width = rectWidth;
+				attrs['.eclass-' + rect.type + '-rect'].transform = 'translate(0,' + accumulatedHeight + ')';
 
-				offsetY += rectHeight;
+				accumulatedHeight += rectHeight;
 			});
+
+			// update size (required for autolayout)
+			var size = this.get("size");
+			size.width = rectWidth;
+			size.height = accumulatedHeight;
+		},
+
+		calculateWidth: function(rects) {
+			var charSize = 8;
+			var widthMargin = 40;
+
+			var width = 0;
+			rects.forEach(function(rect) {
+				if (Array.isArray(rect.text)) {
+					for (index = 0; index < rect.text.length; ++index) {
+						if (rect.text[index].length * charSize > width) {
+							width = rect.text[index].length * charSize;
+						}
+					}
+				}
+				else {
+					if (rect.text.length * charSize > width) {
+						width = rect.text.length * charSize;
+					}
+				}
+			});
+			return width + widthMargin;
 		}
 
 	});

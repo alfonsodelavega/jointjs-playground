@@ -3,7 +3,7 @@ var graph = new joint.dia.Graph();
 new joint.dia.Paper({
 	el: document.getElementById('paper'),
 	model: graph,
-	width: 800,  //TODO: automatic size (responsive to resizes, and node movements)
+	width: 1000,  //TODO: automatic size (responsive to resizes, and node movements)
 	height: 600,
 	gridSize: 1
 	, defaultAnchor: {
@@ -30,66 +30,44 @@ new joint.dia.Paper({
 
 // var uml = joint.shapes.uml;
 
-var classes = {
+var classes = {}
 
-	mammal: new ecore.EClass({
-		size: {
-			width: 240,
-			height: 100
-		},
-		name: 'Mammal',
-		attributes: ['dob: Date'],
-		methods: ['+ setDateOfBirth(dob: Date): Void',
-			'+ getAgeAsDays(): Numeric']
-	}),
+classes.mammal = new ecore.EClass({
+	name: 'Mammal',
+	attributes: ['dob: Date'],
+	methods: ['+ setDateOfBirth(dob: Date): Void',
+		'+ getAgeAsDays(): Numeric']
+});
 
-	person: new ecore.EClass({
-		size: {
-			width: 260,
-			height: 100
-		},
-		name: 'Person',
-		attributes: ['firstName: String', 'lastName: String'],
-		methods: ['+ setName(first: String, last: String): Void',
-			'+ getName(): String']
-	}),
+classes.person = new ecore.EClass({
+	name: 'Person',
+	attributes: ['firstName: String', 'lastName: String'],
+	methods: ['+ setName(first: String, last: String): Void',
+		'+ getName(): String']
+});
 
-	bloodgroup: new ecore.EClass({
-		size: {
-			width: 220,
-			height: 100
-		},
-		name: 'BloodGroup',
-		attributes: ['bloodGroup: String'],
-		methods: ['+ isCompatible(bG: String): Boolean']
-	}),
+classes.bloodgroup =  new ecore.EClass({
+	name: 'BloodGroup',
+	attributes: ['bloodGroup: String'],
+	methods: ['+ isCompatible(bG: String): Boolean']
+});
 
-	address: new ecore.EClass({
-		size: {
-			width: 160,
-			height: 100
-		},
-		name: 'Address',
-		attributes: ['houseNumber: Integer', 'streetName: String',
-			'town: String', 'postcode: String'],
-		methods: []
+classes.address = new ecore.EClass({
+	name: 'Address',
+	attributes: ['houseNumber: Integer', 'streetName: String',
+		'town: String', 'postcode: String'],
+	methods: []
 
-	}),
+});
 
-	man: new ecore.EClass({
-		size: {
-			width: 180,
-			height: 50
-		},
-		name: 'Man'
-	}),
+classes.man =  new ecore.EClass({
+	name: 'Man'
+});
 
-	woman: new ecore.EClass({
-		name: 'Woman',
-		methods: ['+ giveABrith(): Person []']
-	})
-
-};
+classes.woman = new ecore.EClass({
+	name: 'Woman',
+	methods: ['+ giveABrith(): Person []']
+});
 
 Object.keys(classes).forEach(function (key) {
 	graph.addCell(classes[key]);
