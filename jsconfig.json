@@ -1,0 +1,10 @@
+{
+    "typeAcquisition": {
+        "include": [
+            "joint"
+        ]
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
