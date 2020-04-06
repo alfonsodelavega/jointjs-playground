@@ -10,8 +10,8 @@ Just a simple `npm install` in the project folder is required, and then the `ind
 
 ## Relevant files
 
-- `src/classDiagram.js`: defines the elements of the diagram.
-- `src/ecore.js`: set of shapes used in the diagram (work in progress).
+- `index.js`: defines the elements of the diagram.
+- `org.eclipse.epsilon.examples.picto.jointjs/ecore2jointjs/src/ecore.js`: set of shapes used in the diagram (work in progress).
 
 ## Visual Studio Code Intellisense
 
