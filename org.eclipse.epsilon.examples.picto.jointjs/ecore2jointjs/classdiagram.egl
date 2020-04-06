@@ -35,10 +35,12 @@ var classes = getVisibleClasses();%]
 		var paper = ecore.createClassDiagram();
 
 		var classes = {};
+		var relations = {};
 
+		[** First, add all classes to the diagram **]
 		[%for (c in classes) {%]
 			[** Create a node for the class **]
-			classes["[%=c.name%]"] = new ecore.EClass({
+			classes["[%=c.getNodeName()%]"] = new ecore.EClass({
 				name : '[%= c.name %]',
 				attributes : ["[%= c.getAttributes() %]"],
 			});
@@ -48,24 +50,68 @@ var classes = getVisibleClasses();%]
 			graph.addCell(classes[key]);
 		});
 
+		[** Now we can add super/subtypes/etc references**]
+		[%for (c in classes) {%]
+			[%if ((main.isDefined() and c == main) or main.isUndefined()){%]
+				[** Create edges for the supertypes of the class **]
+				[%if (isLayerActive("supertypes")){%]
+				[%for (s in c.eSuperTypes.select(s|classes.includes(s))){%]
+					relations["[%=s.getNodeName()%]-isSuperTypeOf-[%=c.getNodeName()%]"] = new ecore.Generalization({
+						source: {
+							id: classes.[%=s.getNodeName()%].id
+						},
+						target: {
+							id: classes.[%=c.getNodeName()%].id
+						}
+					});
+				[%}%]
+				[%}%]
+	
+				[** ... and for its subtypes **]
+				[%if (isLayerActive("subtypes") and main.isDefined()){%]
+				[%for (s in classes.select(cl|cl.eSuperTypes.includes(c))){%]
+					relations["[%=c.getNodeName()%]-isSuperTypeOf-[%=s.getNodeName()%]"] = new ecore.Generalization({
+						source: {
+							id: classes.[%=c.getNodeName()%].id
+						},
+						target: {
+							id: classes.[%=s.getNodeName()%].id
+						}
+					});
+				[%}%]
+				[%}%]
+			[%}%]
+		[%}%]
 
-		var relations = {};
-
-		[* ... and for its references *]
-
+		[* Finally, add the EReferences *]
 		[%for (r in getUnidirectionalReferences()) {%]
-			relations["[%=r.name%]"] = new ecore.Association({
+			relations.[%=r.getNodeName()%] = new ecore.EReference({
 				source: {
-					id: classes.[%=r.eContainer.name%].id
+					id: classes.[%=r.eContainer.getNodeName()%].id
 				},
 				target: {
-					id: classes.[%=r.eType.name%].id
-				}
+					id: classes.[%=r.eType.getNodeName()%].id
+				},
+				attrs: ecore.unidirectionalRefAttrs
 			});
+			[% if (r.containment) {%]
+				// append containment attributes
+				Object.assign(relations.[%=r.getNodeName()%].get("attrs"), ecore.containmentRefAttrs)
+			[%}%]
 		[%}%]
 		[%for (r in getBidirectionalReferences()) {%]
-		[%}%]
-		[%for (r in getVisibleReferences()){%]
+			relations.[%=r.getNodeName()%] = new ecore.EReference({
+				source: {
+					id: classes.[%=r.eContainer.getNodeName()%].id
+				},
+				target: {
+					id: classes.[%=r.eType.getNodeName()%].id
+				}
+			});
+			[% if (r.containment) {%]
+				// append containment attributes
+				Object.assign(relations.[%=r.getNodeName()%].get("attrs"), ecore.containmentRefAttrs)
+			[%}%]
 		[%}%]
 
 		Object.keys(relations).forEach(function(key) {

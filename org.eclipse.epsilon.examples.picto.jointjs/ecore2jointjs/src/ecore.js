@@ -133,29 +133,27 @@ ecore = function () {
 		}
 	});
 
-	// TODO: to make easier the managements of subtypes, the generalizations
-	//   should be targeted from the parent to the children
-	// (i.e. A -> B should represent  "A supertypeOf B". Right now it's the opposite)
+	// A -> B represents  "A supertypeOf B"
 	var Generalization = joint.dia.Link.define('ecore.Generalization', {
-		attrs: { '.marker-target': { d: 'M 10 0 L 0 7 L 10 14 z', fill: 'white' } }
+		attrs: { '.marker-source': { d: 'M 10 0 L 0 7 L 10 14 z', fill: 'white' } }
 	});
 
-	var Composition = joint.dia.Link.define('ecore.Composition', {
-		attrs: { '.marker-source': { d: 'M 14 4 L 7 8 L 0 4 L 7 0 z', fill: 'black' } }
-	});
+	var EReference = joint.dia.Link.define('ecore.EReference');
 
-	// TODO: divide into unidirectional (with arrow) and bidirectional (without)
-	//   Think if maybe we could have a single link defined, and then select
-	//   different .marker-source and .marker-target to represent compositions
-	//   aggregations, maybe even generalizations, etc.
-	// However, having different types could help when parsing the objects / diffing
-	var Association = joint.dia.Link.define('ecore.Association');
+	var containmentRefAttrs = {
+		'.marker-source': { d: 'M 14 4 L 7 8 L 0 4 L 7 0 z', fill: 'black' }
+	};
+
+	var unidirectionalRefAttrs = {
+		'.marker-target': { d: 'M 10 0 L 0 5 L 10 10 L 5 5 L 10 0 z', fill: 'black' }
+	};
 
 	return {
 		createClassDiagram: createClassDiagram,
 		EClass: EClass,
+		EReference: EReference,
 		Generalization: Generalization,
-		Composition: Composition,
-		Association: Association
+		containmentRefAttrs : containmentRefAttrs,
+		unidirectionalRefAttrs : unidirectionalRefAttrs
 	}
 }();

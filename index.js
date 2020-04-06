@@ -66,14 +66,15 @@ var relations = [new ecore.Generalization({
 	target: {
 		id: classes.mammal.id
 	}
-}), new ecore.Association({
+}), new ecore.EReference({
 	source: {
 		id: classes.person.id
 	},
 	target: {
 		id: classes.address.id
-	}
-}), new ecore.Composition({
+	},
+	attrs: Object.assign({}, ecore.containmentRefAttrs, ecore.unidirectionalRefAttrs)
+}), new ecore.EReference({
 	source: {
 		id: classes.person.id
 	},
