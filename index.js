@@ -1,24 +1,6 @@
 var graph = new joint.dia.Graph();
 
-var paper = new joint.dia.Paper({
-	el: document.getElementById('paper'),
-	model: graph,
-	width: 1000,  //TODO: automatic size (responsive to resizes, and node movements)
-	height: 600,
-	gridSize: 5
-	, defaultAnchor: {
-		name: 'perpendicular'
-	}
-	// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#routers.manhattan
-	, defaultRouter: {
-		name: 'manhattan',
-		args: {
-			step: 5,
-			padding: 20
-		}
-	}
-	// , interactive: false // disables ALL interactions with the graph
-});
+var paper = ecore.createClassDiagram();
 
 var classes = {}
 

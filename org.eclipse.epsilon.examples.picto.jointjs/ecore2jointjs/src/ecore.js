@@ -1,6 +1,28 @@
 // custom shapes to visualise ecore diagrams
 ecore = function () {
 
+	var createClassDiagram = function() {
+		return new joint.dia.Paper({
+			el: document.getElementById('paper'),
+			model: graph,
+			width: 1000,  //TODO: automatic size (responsive to resizes, and node movements)
+			height: 600,
+			gridSize: 5
+			, defaultAnchor: {
+				name: 'perpendicular'
+			}
+			// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#routers.manhattan
+			, defaultRouter: {
+				name: 'manhattan',
+				args: {
+					step: 5,
+					padding: 15
+				}
+			}
+			// , interactive: false // disables ALL interactions with the graph
+		});
+	}
+
 	var EClass = joint.shapes.basic.Generic.define('ecore.EClass', {
 		attrs: {
 			'.eclass-name-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
@@ -115,11 +137,11 @@ ecore = function () {
 	//   should be targeted from the parent to the children
 	// (i.e. A -> B should represent  "A supertypeOf B". Right now it's the opposite)
 	var Generalization = joint.dia.Link.define('ecore.Generalization', {
-		attrs: { '.marker-target': { d: 'M 20 0 L 0 10 L 20 20 z', fill: 'white' } }
+		attrs: { '.marker-target': { d: 'M 10 0 L 0 7 L 10 14 z', fill: 'white' } }
 	});
 
 	var Composition = joint.dia.Link.define('ecore.Composition', {
-		attrs: { '.marker-source': { d: 'M 20 5 L 10 10 L 0 5 L 10 0 z', fill: 'black' } }
+		attrs: { '.marker-source': { d: 'M 14 4 L 7 8 L 0 4 L 7 0 z', fill: 'black' } }
 	});
 
 	// TODO: divide into unidirectional (with arrow) and bidirectional (without)
@@ -130,6 +152,7 @@ ecore = function () {
 	var Association = joint.dia.Link.define('ecore.Association');
 
 	return {
+		createClassDiagram: createClassDiagram,
 		EClass: EClass,
 		Generalization: Generalization,
 		Composition: Composition,
