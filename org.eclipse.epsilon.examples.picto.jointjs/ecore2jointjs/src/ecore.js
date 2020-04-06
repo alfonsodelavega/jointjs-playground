@@ -18,12 +18,12 @@ ecore = function () {
 				'font-size': 16, 'font-family': 'monospace'
 			},
 			'.eclass-attrs-text': {
-				'ref': '.eclass-attrs-rect', 'ref-y': 5, 'ref-x': 5,
+				'ref': '.eclass-attrs-rect', 'ref-y': 7, 'ref-x': 7,
 				'fill': 'black',
 				'font-size': 14, 'font-family': 'monospace'
 			},
 			'.eclass-methods-text': {
-				'ref': '.eclass-methods-rect', 'ref-y': 5, 'ref-x': 5,
+				'ref': '.eclass-methods-rect', 'ref-y': 7, 'ref-x': 7,
 				'fill': 'black',
 				'font-size': 14, 'font-family': 'monospace'
 			}
