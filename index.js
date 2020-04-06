@@ -47,24 +47,24 @@ Object.keys(classes).forEach(function (key) {
 
 var relations = [new ecore.Generalization({
 	source: {
+		id: classes.person.id
+	},
+	target: {
 		id: classes.man.id
-	},
-	target: {
-		id: classes.person.id
 	}
 }), new ecore.Generalization({
 	source: {
+		id: classes.person.id
+	},
+	target: {
 		id: classes.woman.id
-	},
-	target: {
-		id: classes.person.id
 	}
 }), new ecore.Generalization({
 	source: {
-		id: classes.person.id
+		id: classes.mammal.id
 	},
 	target: {
-		id: classes.mammal.id
+		id: classes.person.id
 	}
 }), new ecore.EReference({
 	source: {

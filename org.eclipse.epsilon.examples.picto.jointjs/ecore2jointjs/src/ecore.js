@@ -5,7 +5,7 @@ ecore = function () {
 		return new joint.dia.Paper({
 			el: document.getElementById('paper'),
 			model: graph,
-			width: 1000,  //TODO: automatic size (responsive to resizes, and node movements)
+			width: 1200,  //TODO: automatic size (responsive to resizes, and node movements)
 			height: 600,
 			gridSize: 5
 			, defaultAnchor: {
