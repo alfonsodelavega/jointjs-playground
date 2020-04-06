@@ -102,5 +102,5 @@ joint.layout.DirectedGraph.layout(graph, {
 	// any additional options would go here
 	nodeSep: 50,
 	edgeSep: 80,
-	rankDir: "TB" // "TB" / "BT" / "LR" / "RL"
+	rankDir: "LR" // "TB" / "BT" / "LR" / "RL"
 });
