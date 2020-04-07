@@ -25,9 +25,9 @@ ecore = function () {
 
 	var EClass = joint.shapes.basic.Generic.define('ecore.EClass', {
 		attrs: {
-			'.eclass-name-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
-			'.eclass-attrs-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
-			'.eclass-methods-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': 'white' },
+			'.eclass-name-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': '#fffcdc' },
+			'.eclass-attrs-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': '#fffcdc' },
+			'.eclass-methods-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': '#fffcdc' },
 
 			'.eclass-name-text': {
 				'ref': '.eclass-name-rect',
@@ -130,6 +130,12 @@ ecore = function () {
 				}
 			});
 			return width + widthMargin;
+		},
+		setFillColor: function (fillColor) {
+			var attrs = this.get("attrs");
+			attrs ['.eclass-name-rect'].fill = fillColor;
+			attrs ['.eclass-attrs-rect'].fill = fillColor;
+			attrs ['.eclass-methods-rect'].fill = fillColor;
 		}
 	});
 

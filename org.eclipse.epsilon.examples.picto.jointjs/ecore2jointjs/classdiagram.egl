@@ -45,6 +45,9 @@ var classes = getVisibleClasses();%]
 				name : '[%= c.name %]',
 				attributes : [[%= c.getFeatures() %]],
 			});
+			[%if (c == main) {%]
+				classes["[%=c.getNodeName()%]"].setFillColor("#c8f0a1");
+			[%}%]
 		[%}%]
 
 		Object.keys(classes).forEach(function(key) {
