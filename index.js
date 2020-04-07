@@ -74,6 +74,13 @@ var relations = [new ecore.Generalization({
 		id: classes.address.id
 	},
 	attrs: Object.assign({}, ecore.containmentRefAttrs, ecore.unidirectionalRefAttrs)
+	,labels: [{
+		attrs: { text: { text: "address" }},
+		position: {
+			offset: 15,
+			distance: 0.5
+		}
+	}]
 }), new ecore.EReference({
 	source: {
 		id: classes.person.id
