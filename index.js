@@ -74,11 +74,13 @@ var relations = [new ecore.Generalization({
 		id: classes.address.id
 	},
 	attrs: Object.assign({}, ecore.containmentRefAttrs, ecore.unidirectionalRefAttrs)
+	// https://resources.jointjs.com/tutorial/link-labels
+	// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#dia.Link.labels
 	,labels: [{
 		attrs: { text: { text: "address" }},
 		position: {
-			offset: 15,
-			distance: 0.5
+			offset: {x: 0, y: 15}, // impossible to set an optimal offset for all situations
+			distance: -10
 		}
 	}]
 }), new ecore.EReference({
@@ -110,5 +112,5 @@ joint.layout.DirectedGraph.layout(graph, {
 	// any additional options would go here
 	nodeSep: 50,
 	edgeSep: 80,
-	rankDir: "LR" // "TB" / "BT" / "LR" / "RL"
+	rankDir: "TB" // "TB" / "BT" / "LR" / "RL"
 });

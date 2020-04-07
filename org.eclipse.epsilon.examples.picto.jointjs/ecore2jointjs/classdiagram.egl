@@ -42,7 +42,7 @@ var classes = getVisibleClasses();%]
 			[** Create a node for the class **]
 			classes["[%=c.getNodeName()%]"] = new ecore.EClass({
 				name : '[%= c.name %]',
-				attributes : ["[%= c.getAttributes() %]"],
+				attributes : [[%= c.getFeatures() %]],
 			});
 		[%}%]
 
@@ -93,7 +93,17 @@ var classes = getVisibleClasses();%]
 					id: classes.[%=r.eType.getNodeName()%].id
 				},
 				attrs: ecore.unidirectionalRefAttrs
-			});
+				[%if (isLayerActive("referenceLabels")){%]
+				,labels: [{
+					attrs: {
+						text: { text: '[%=r.getReferenceLabel()%]' }},
+						position: {
+							offset: 15,
+							distance: 0.7
+						}
+					}]
+				[%}%]
+				});
 			[% if (r.containment) {%]
 				// append containment attributes
 				relations.[%=r.getNodeName()%].attr(ecore.containmentRefAttrs);
@@ -107,10 +117,29 @@ var classes = getVisibleClasses();%]
 				target: {
 					id: classes.[%=r.eType.getNodeName()%].id
 				}
+				[%if (isLayerActive("referenceLabels")){%]
+				,labels: [
+					{
+						attrs: {
+						text: { text: '[%=r.getReferenceLabel()%]' }},
+						position: {
+							offset: -15,
+							distance: 0.8
+						}
+					},
+					{
+						attrs: {
+						text: { text: '[%=r.eOpposite.getReferenceLabel()%]' }},
+						position: {
+							offset: 15,
+							distance: 0.2
+						}
+					}]
+				[%}%]
 			});
 			[% if (r.containment) {%]
 				// append containment attributes
-				relations.[%=r.getNodeName()%].attr(ecore.containmentRefAttrs);
+				Object.assign(relations.[%=r.getNodeName()%].get("attrs"), ecore.containmentRefAttrs)
 			[%}%]
 		[%}%]
 
@@ -145,14 +174,24 @@ var classes = getVisibleClasses();%]
 
 [%
 
-operation EClass getAttributes() {
-	return self.eAttributes.collect(attr | attr.name + " : " + attr.eType.name).concat(", ");
+operation EReference getReferenceLabel() {
+	var label = self.name;
+	if (self.isDerived()) label = "/" + label;
+	// if (self.eType.isDefined()) label += " : " + self.eType.name;
+	if (self.isMany()) {
+		label += " [";
+		if (self.isRequired()) {
+			label += "1..";
+		}
+		else {
+			label += "0..";
+		}
+		label += "*" + "]";
+	}
+	return label;
 }
 
-
-operation EClass getLabel() {
-	var fillcolor = "fffcdc"; if (self==main) fillcolor="c8f0a1";
-	var label = "<table cellspacing='0' cellborder='0' cellpadding='1' bgcolor='#" + fillcolor + "'>";
+operation EClass getFeatures() {
 	var features = self.eAllStructuralFeatures;
 
 	if (not isLayerActive("inherited")) features = self.eStructuralFeatures;
@@ -160,47 +199,15 @@ operation EClass getLabel() {
 
 	if (self.eSuperTypes.includes(main)) features = features.excludingAll(main.eAllStructuralFeatures);
 
-	var javascript = "javascript:top.showView('/Model/Classes/" + self.name + "')";
-	var tooltip = "Show class diagram for " + self.name;
-	if (self==main) {
-		javascript = "javascript:top.showElement('" + self.id + "','" + self.eResource.uri + "')";
-		tooltip = "Go to " + self.name + " in the Ecore editor";
-	}
-
-	label += "<tr><td sides='B' colspan='2' border='1'>" +
-		"<table border='0' cellspacing='0' cellborder='0' cellpading='0'>" +
-		"<tr><td align='right' valign='middle'><img src='" + self.getIcon()+ "'></img></td>" +
-		"<td align='left' valign='middle' href=\""+javascript+"\" tooltip='" + tooltip + "'>" + self.name + "</td></tr></table></td></tr>";
-
-	label += "<tr><td></td><td></td></tr>";
-
-	for (f in features.sortBy(f|f.name.toLowerCase())) {
-		label += "<tr>";
-		label += "<td><img src='" + f.getIcon() + "'></img></td><td align='left'>" + f.getLabel(self) + "</td>";
-		label += "</tr>";
-	}
-
-	if (features.isEmpty()){
-		label += "<tr>";
-		label += "<td> </td><td> </td>";
-		label += "</tr>";
-	}
-
-	label += "</table>";
-	return label;
+	return features.collect(f | f.getFormattedFeature()).concat(", ");
 }
 
-operation EStructuralFeature getLabel(eClass : EClass) {
+operation EStructuralFeature getFormattedFeature() {
 	var label = self.name;
 	if (self.isDerived()) label = "/" + label;
 	if (self.eType.isDefined()) label += " : " + self.eType.name;
 	if (self.isMany) label += "["+"*"+"]";
-	label += "  ";
-	if (eClass == main and self.eContainer() == eClass) label = "<font color='blue'>" + label + "</font>";
-	if (self.isTypeOf(EReference)) {
-		// add href here
-	}
-	return label;
+	return "'" + label + "'";
 }
 
 operation EOperation getLabel() {
