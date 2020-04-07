@@ -1,7 +1,7 @@
 // custom shapes to visualise ecore diagrams
 ecore = function () {
 
-	var createClassDiagram = function() {
+	var createClassDiagram = function () {
 		return new joint.dia.Paper({
 			el: document.getElementById('paper'),
 			model: graph,
@@ -51,7 +51,7 @@ ecore = function () {
 			}
 		},
 
-		size: { }, // fill this size attribute for autolayout
+		size: {}, // fill this size attribute for autolayout
 
 		name: [],
 		attributes: [],
@@ -59,10 +59,10 @@ ecore = function () {
 	}, {
 		markup: [
 			'<g class="rotatable">',
-				'<g class="scalable">',
-					'<rect class="eclass-name-rect"/><rect class="eclass-attrs-rect"/><rect class="eclass-methods-rect"/>',
-				'</g>',
-				'<text class="eclass-name-text"/><text class="eclass-attrs-text"/><text class="eclass-methods-text"/>',
+			'<g class="scalable">',
+			'<rect class="eclass-name-rect"/><rect class="eclass-attrs-rect"/><rect class="eclass-methods-rect"/>',
+			'</g>',
+			'<text class="eclass-name-text"/><text class="eclass-attrs-text"/><text class="eclass-methods-text"/>',
 			'</g>'
 		].join(''),
 
@@ -110,12 +110,12 @@ ecore = function () {
 			size.height = accumulatedHeight;
 		},
 
-		calculateWidth: function(rects) {
+		calculateWidth: function (rects) {
 			var charSize = 8;
 			var widthMargin = 40;
 
 			var width = 0;
-			rects.forEach(function(rect) {
+			rects.forEach(function (rect) {
 				if (Array.isArray(rect.text)) {
 					for (index = 0; index < rect.text.length; ++index) {
 						if (rect.text[index].length * charSize > width) {
@@ -148,12 +148,86 @@ ecore = function () {
 		'.marker-target': { d: 'M 10 0 L 0 5 L 10 10 L 5 5 L 10 0 z', fill: 'black' }
 	};
 
+	var CustomTextBox = joint.dia.Element.define('ecore.CustomTextBox', {
+		attrs: {
+			label: {
+				textAnchor: 'left',
+				textVerticalAnchor: 'middle',
+				fontSize: 12,
+				fontFamily: "monospace"
+			},
+			outline: {
+				ref: 'label',
+				refX: "-10%",
+				refY: "-10%",
+				refWidth: '120%',
+				refHeight: '120%',
+				strokeWidth: 1,
+				stroke: '#000000',
+				fill: 'white'
+			}
+		}
+	}, {
+		markup: [
+			{ tagName: 'rect', selector: 'outline' },
+			{ tagName: 'text', selector: 'label' }
+		],
+		breakTextWidth: 300, // custom attr
+		setText: function (newText) {
+			this.attr({
+				label: {
+					text: joint.util.breakText(newText, { width: this.breakTextWidth })
+				}
+			});
+		},
+		createLinkFrom: function (node) {
+			var link = new joint.dia.Link();
+			link.source(node);
+			link.target(this);
+			// TODO: styling the link is currently not working, don't know why
+			link.attr({
+				line: {
+					strokeDasharray: '5 5',
+					strokeDashoffset: 7.5
+				}
+			});
+			return link;
+		}
+	});
+
+	var Documentation = CustomTextBox.define("ecore.Documentation", {
+		attrs: {
+			outline: {
+				fill: "azure"
+			}
+		}
+	});
+
+	var Constraint = CustomTextBox.define("ecore.Constraint", {
+		attrs: {
+			outline: {
+				fill: "mistyrose"
+			}
+		}
+	});
+
+	var Critique = CustomTextBox.define("ecore.Critique", {
+		attrs: {
+			outline: {
+				fill: "lemonchiffon"
+			}
+		}
+	});
+
 	return {
 		createClassDiagram: createClassDiagram,
 		EClass: EClass,
 		EReference: EReference,
 		Generalization: Generalization,
-		containmentRefAttrs : containmentRefAttrs,
-		unidirectionalRefAttrs : unidirectionalRefAttrs
+		containmentRefAttrs: containmentRefAttrs,
+		unidirectionalRefAttrs: unidirectionalRefAttrs,
+		Documentation: Documentation,
+		Constraint: Constraint,
+		Critique: Critique
 	}
 }();

@@ -2,7 +2,7 @@
 
 // If the root EPackage has a @constraints(file="foo.evl")
 // annotation, parse the constraints into an EVL module
-//var module = getValidationModule();
+var module = getValidationModule();
 
 // Compute the set of classes to be shown in this diagram
 var main = getMainClass();
@@ -36,6 +36,7 @@ var classes = getVisibleClasses();%]
 
 		var classes = {};
 		var relations = {};
+		var doc, constraint;
 
 		[** First, add all classes to the diagram **]
 		[%for (c in classes) {%]
@@ -53,6 +54,31 @@ var classes = getVisibleClasses();%]
 		[** Now we can add super/subtypes/etc references**]
 		[%for (c in classes) {%]
 			[%if ((main.isDefined() and c == main) or main.isUndefined()){%]
+				[** Create nodes for all the constraints of the class*]
+				[%if (isLayerActive("constraints")){%]
+				[%for (constraint in module.constraintContexts.select(ctx|ctx.typeName=c.name).collect(ctx|ctx.constraints).flatten()){%]
+					[%if (constraint.isCritique()) {%]
+						constraint = new ecore.Critique();
+					[%} else {%]
+						constraint = new ecore.Constraint();
+					[%}%]
+					constraint.setText("[%=constraint.getConstraintLabel()%]");
+					constraint.addTo(graph);
+					constraint.createLinkFrom(classes.[%=c.getNodeName()%]).addTo(graph);
+				[%}%]
+				[%}%]
+
+				[** Create node for all the documentation annotations of the class*]
+				[%if (isLayerActive("documentation")){%]
+				[%var documentation = c.getAnnotationValue("http://www.eclipse.org/emf/2002/GenModel", "documentation");%]
+				[%if (documentation.isDefined()){%]
+					doc = new ecore.Documentation();
+					doc.setText("[%=documentation%]");
+					doc.addTo(graph);
+					doc.createLinkFrom(classes.[%=c.getNodeName()%]).addTo(graph);
+				[%}%]
+				[%}%]
+
 				[** Create edges for the supertypes of the class **]
 				[%if (isLayerActive("supertypes")){%]
 				[%for (s in c.eSuperTypes.select(s|classes.includes(s))){%]
@@ -221,41 +247,10 @@ operation EOperation getLabel() {
 	return label;
 }
 
-operation EReference getArrowHead() {
-	if (self.eOpposite.isDefined() and self.eOpposite.containment) {
-		return "diamond";
-	}
-	return "open";
-}
-
-operation EReference getArrowTail() {
-	if (self.containment) {
-		return "diamond";
-	}
-	else {
-		if (self.eOpposite.isDefined()) {
-			return "open";
-		}
-		else {
-			return "none";
-		}
-	}
-
-}
-
-operation EReference getIdentifier() {
-	return self.eContainingClass.name + "_" + self.name;
-}
-
 operation Any getConstraintLabel() {
 	var label = self.name;
 	if (self.comments.notEmpty()) label = label + ": " + self.comments.first();
-	return label.toMultiline();
-}
-
-operation Any getConstraintColour() {
-	if (self.isCritique()) return "khaki1";
-	else return "mistyrose";
+	return label;
 }
 
 operation getVisibleClasses() {
@@ -329,31 +324,6 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
 	}
 
 	return det;
-}
-
-operation String toMultiline() : String {
-	var multiline = "";
-
-	for (line in self.split("\\n")) {
-		var length = 0;
-		for (part in line.split(" ")) {
-			multiline += part + " ";
-			if (length > 30) {
-				multiline += "\\l";
-				length = 0;
-			}
-			else {
-				length += part.length();
-			}
-		}
-		if (not multiline.endsWith("\\l")) multiline += "\\l";
-		if (hasMore) multiline += "\\n";
-	}
-	if (not multiline.endsWith("\\l")) multiline += "\\l";
-
-	multiline = multiline.replaceAll('"', '\\\\"');
-
-	return multiline;
 }
 
 operation EClass getNodeName() {

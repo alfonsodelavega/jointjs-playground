@@ -96,6 +96,13 @@ Object.keys(relations).forEach(function (key) {
 	graph.addCell(relations[key]);
 });
 
+// documentation test
+var doc = new ecore.Documentation();
+doc.setText('lorem ipsum dolor sit amet consectetur adipiscing elit');
+doc.addTo(graph);
+var link = doc.createLinkFrom(classes.woman);
+link.addTo(graph);
+
 // avoid links accross classes on movement
 //   this might penalize performance if there are many links
 graph.on('change:position', function(cell) {
