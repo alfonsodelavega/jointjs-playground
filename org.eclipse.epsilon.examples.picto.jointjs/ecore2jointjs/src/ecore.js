@@ -5,8 +5,8 @@ ecore = function () {
 		return new joint.dia.Paper({
 			el: document.getElementById('paper'),
 			model: graph,
-			width: 1200,  //TODO: automatic size (responsive to resizes, and node movements)
-			height: 600,
+			width: 10, // the real size should be updated with paper.fitToContent();
+			height: 10,
 			gridSize: 5
 			, defaultAnchor: {
 				name: 'perpendicular'
@@ -18,7 +18,8 @@ ecore = function () {
 					step: 5,
 					padding: 15
 				}
-			}
+			},
+			restrictTranslate: true // prevent elements from moving outside the paper area
 			// , interactive: false // disables ALL interactions with the graph
 		});
 	}
@@ -57,6 +58,8 @@ ecore = function () {
 		attributes: [],
 		methods: []
 	}, {
+		// TODO: change to json parsing to improve performance
+		// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#dia.Cell.markup
 		markup: [
 			'<g class="rotatable">',
 			'<g class="scalable">',
@@ -154,38 +157,60 @@ ecore = function () {
 		'.marker-target': { d: 'M 10 0 L 0 5 L 10 10 L 5 5 L 10 0 z', fill: 'black' }
 	};
 
-	var CustomTextBox = joint.dia.Element.define('ecore.CustomTextBox', {
+	var CustomTextBox = joint.shapes.standard.Rectangle.define('ecore.CustomTextBox', {
 		attrs: {
 			label: {
 				textAnchor: 'left',
 				textVerticalAnchor: 'middle',
 				fontSize: 12,
-				fontFamily: "monospace"
+				fontFamily: "monospace",
+				refX: 10, // must be absolute because of setText() below
+				refY: '50%'
 			},
-			outline: {
-				ref: 'label',
-				refX: "-10%",
-				refY: "-10%",
-				refWidth: '120%',
-				refHeight: '120%',
-				strokeWidth: 1,
-				stroke: '#000000',
-				fill: 'white'
+			body: {
+				strokeWidth: 1
 			}
 		}
 	}, {
-		markup: [
-			{ tagName: 'rect', selector: 'outline' },
-			{ tagName: 'text', selector: 'label' }
-		],
 		breakTextWidth: 300, // custom attr
+
 		setText: function (newText) {
-			this.attr({
-				label: {
-					text: joint.util.breakText(newText, { width: this.breakTextWidth })
-				}
-			});
+
+			// split the text into different lines (up to the allowed width)
+			var brokenText = joint.util.breakText(
+				newText,
+				{ width: this.breakTextWidth },
+				{
+					"font-size": this.attr("label/fontSize"),
+					"font-family": this.attr("label/fontFamily")
+				});
+			this.attr("label/text", brokenText);
+
+			// set the model size according to the text size
+			var padding = 15;
+			var lineVerticalSize = 10;
+			var charHorizontalSize = 7.5;
+			var lines = brokenText.split(/\n/)
+			var numLines = lines.length
+
+			var size = this.get("size");
+			size.height = numLines * lineVerticalSize + padding;
+			if (numLines > 1) {
+				var maxLength = 0;
+				lines.forEach(function (line) {
+					if (line.length > maxLength) {
+						maxLength = line.length;
+					}
+				});
+				size.width =
+					maxLength * charHorizontalSize + this.attr("label/refX");
+			}
+			else {
+				size.width =
+					newText.length * charHorizontalSize + this.attr("label/refX");
+			}
 		},
+
 		createLinkFrom: function (node) {
 			var link = new joint.dia.Link();
 			link.source(node);
@@ -203,7 +228,7 @@ ecore = function () {
 
 	var Documentation = CustomTextBox.define("ecore.Documentation", {
 		attrs: {
-			outline: {
+			body: {
 				fill: "azure"
 			}
 		}
@@ -211,7 +236,7 @@ ecore = function () {
 
 	var Constraint = CustomTextBox.define("ecore.Constraint", {
 		attrs: {
-			outline: {
+			body: {
 				fill: "mistyrose"
 			}
 		}
@@ -219,7 +244,7 @@ ecore = function () {
 
 	var Critique = CustomTextBox.define("ecore.Critique", {
 		attrs: {
-			outline: {
+			body: {
 				fill: "lemonchiffon"
 			}
 		}

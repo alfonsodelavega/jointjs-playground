@@ -8,6 +8,10 @@ var classes = {};
 var relations = {};
 var doc, constraint;
 
+// for greater performance, the diagram is not updated
+//   until every element has been created and positioned
+paper.freeze();
+
 classes["_NamedElement"] = new ecore.EClass({
 	name: 'NamedElement',
 	attributes: ['name : EString'],
@@ -213,14 +217,7 @@ Object.keys(relations).forEach(function (key) {
 	graph.addCell(relations[key]);
 });
 
-// (fonso) COMMENTED UNTIL THE AUTOLAYOUT FUNCTION IMPROVES
-// // avoid links accross classes on movement
-// //   this might penalize performance if there are many links
-// graph.on('change:position', function (cell) {
-// 	Object.keys(relations).forEach(function (key) {
-// 		paper.findViewByModel(relations[key]).update();
-// 	});
-// });
+
 
 // automatic layout of the diagram
 joint.layout.DirectedGraph.layout(graph, {
@@ -232,7 +229,15 @@ joint.layout.DirectedGraph.layout(graph, {
 	edgeSep: 80,
 	rankDir: "TB" // "TB" / "BT" / "LR" / "RL"
 });
+paper.unfreeze();
+paper.fitToContent();
 
-paper.fitToContent({
-	padding: 50
-});
+// (fonso) COMMENTED UNTIL THE AUTOLAYOUT FUNCTION IMPROVES
+// avoid links accross classes on movement
+//   this might penalize performance if there are many links
+// graph.on('change:position', function (cell) {
+//	// TODO: this only updates links in the"relations" collection
+// 	Object.keys(relations).forEach(function (key) {
+// 		paper.findViewByModel(relations[key]).update();
+// 	});
+// });

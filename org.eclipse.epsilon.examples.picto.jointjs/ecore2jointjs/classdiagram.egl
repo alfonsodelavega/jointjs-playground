@@ -37,6 +37,9 @@ var classes = getVisibleClasses();%]
 		var classes = {};
 		var relations = {};
 		var doc, constraint;
+		// for greater performance, the diagram is not updated
+		//   until every element has been created and positioned
+		paper.freeze();
 
 		[** First, add all classes to the diagram **]
 		[%for (c in classes) {%]
@@ -176,14 +179,6 @@ var classes = getVisibleClasses();%]
 			graph.addCell(relations[key]);
 		});
 
-		// avoid links accross classes on movement
-		//   this might penalize performance if there are many links
-		graph.on('change:position', function(cell) {
-			Object.keys(relations).forEach(function (key) {
-				paper.findViewByModel(relations[key]).update();
-			});
-		});
-
 		// automatic layout of the diagram
 		joint.layout.DirectedGraph.layout(graph, {
 			// necessary variables for the autolayout
@@ -194,6 +189,8 @@ var classes = getVisibleClasses();%]
 			edgeSep: 80,
 			rankDir: "LR" // "TB" / "BT" / "LR" / "RL"
 		});
+		paper.unfreeze();
+		paper.fitToContent();
 
 	</script>
 </body>
