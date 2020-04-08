@@ -111,7 +111,7 @@ constraint.addTo(graph);
 constraint.createLinkFrom(classes._Connector).addTo(graph);
 
 doc = new ecore.Documentation();
-doc.setText("Connectors connect ports of components");
+doc.setText(" this is a  counter example for the resizing options that I am i i i i  iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii iiiiiiiiiiiiii iiiiiiiiiiiiiii iiiiiiiiiiiiiiiiiiiiiii");
 doc.addTo(graph);
 doc.createLinkFrom(classes._Connector).addTo(graph);
 

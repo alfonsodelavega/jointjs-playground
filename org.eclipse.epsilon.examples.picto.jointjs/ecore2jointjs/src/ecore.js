@@ -1,5 +1,57 @@
 // custom shapes to visualise ecore diagrams
-ecore = function () {
+var ecore = function () {
+
+	var util = function() {
+
+		// calculate with of text by using a temporal svg element
+		//   mechanism extracted from joint.util.breakText
+		var computeTextWidth = function(text, styles, opt) {
+
+			opt = opt || {};
+			styles = styles || {};
+
+			var svgDocument = opt.svgDocument || V('svg').node;
+			var textSpan = joint.V('tspan').node;
+			var textElement = joint.V('text').attr(styles).append(textSpan).node;
+			var textNode = document.createTextNode('');
+
+			// Prevent flickering
+			textElement.style.opacity = 0;
+			// Prevent FF from throwing an uncaught exception when `getBBox()`
+			// called on element that is not in the render tree (is not measurable).
+			// <tspan>.getComputedTextLength() returns always 0 in this case.
+			// Note that the `textElement` resp. `textSpan` can become hidden
+			// when it's appended to the DOM and a `display: none` CSS stylesheet
+			// rule gets applied.
+			textElement.style.display = 'block';
+			textSpan.style.display = 'block';
+
+			textSpan.appendChild(textNode);
+			svgDocument.appendChild(textElement);
+
+			if (!opt.svgDocument) {
+				document.body.appendChild(svgDocument);
+			}
+
+			textNode.data = text;
+			var textWidth = textSpan.getComputedTextLength();
+
+			if (opt.svgDocument) {
+				// svg document was provided, remove the text element only
+				svgDocument.removeChild(textElement);
+			}
+			else {
+				// clean svg document
+				document.body.removeChild(svgDocument);
+			}
+
+			return textWidth;
+		};
+
+		return {
+			computeTextWidth : computeTextWidth
+		}
+	}();
 
 	var createClassDiagram = function () {
 		return new joint.dia.Paper({
@@ -30,6 +82,9 @@ ecore = function () {
 			'.eclass-attrs-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': '#fffcdc' },
 			'.eclass-methods-rect': { 'stroke': 'black', 'stroke-width': 1, 'fill': '#fffcdc' },
 
+			// Note: for the calculateWidth function to work properly, the font details of these
+			//   three elements (class name, attrs and methods) must be always the same
+			// TODO: improve/merge common styles in better css classes
 			'.eclass-name-text': {
 				'ref': '.eclass-name-rect',
 				'ref-y': .5,
@@ -90,13 +145,17 @@ ecore = function () {
 			];
 
 			var rectWidth = this.calculateWidth(rects);
+			var fontSize = attrs[".eclass-attrs-text"]["font-size"]
 
 			var accumulatedHeight = 0;
 
+			// TODO: hide methods rectangle if it is empty (as usually)
 			rects.forEach(function (rect) {
 
 				var lines = Array.isArray(rect.text) ? rect.text : [rect.text];
-				var rectHeight = lines.length * 14 + 14; // update with font sizes
+				var rectHeight =
+						lines.length * fontSize
+						+ 2 * attrs[".eclass-attrs-text"]["ref-y"];
 
 
 				attrs['.eclass-' + rect.type + '-text'].text = lines.join('\n');
@@ -114,26 +173,33 @@ ecore = function () {
 		},
 
 		calculateWidth: function (rects) {
-			var charSize = 8;
-			var widthMargin = 40;
+			// taking class name attributes because font size is bigger
+			var textStyle = {
+				"font-size": this.attr(".eclass-name-text/font-size"),
+				"font-family": this.attr(".eclass-name-text/font-family")
+			};
 
-			var width = 0;
+			var maxWidth = 0;
+			// this svg doc is created to improve performance of computeTextWidth
+			var svgDocument = V('svg').node;
+			document.body.appendChild(svgDocument);
 			rects.forEach(function (rect) {
-				if (Array.isArray(rect.text)) {
-					for (index = 0; index < rect.text.length; ++index) {
-						if (rect.text[index].length * charSize > width) {
-							width = rect.text[index].length * charSize;
-						}
-					}
-				}
-				else {
-					if (rect.text.length * charSize > width) {
-						width = rect.text.length * charSize;
+				var lines = Array.isArray(rect.text) ? rect.text : [rect.text];
+				for (index = 0; index < lines.length; ++index) {
+					var lineWidth = util.computeTextWidth(
+						lines[index],
+						textStyle,
+						{svgDocument : svgDocument});
+					if (lineWidth > maxWidth) {
+						maxWidth = lineWidth;
 					}
 				}
 			});
-			return width + widthMargin;
+			document.body.removeChild(svgDocument);
+
+			return maxWidth + 2 * this.attr(".eclass-attrs-text/ref-x");
 		},
+
 		setFillColor: function (fillColor) {
 			var attrs = this.get("attrs");
 			attrs ['.eclass-name-rect'].fill = fillColor;
@@ -164,7 +230,7 @@ ecore = function () {
 				textVerticalAnchor: 'middle',
 				fontSize: 12,
 				fontFamily: "monospace",
-				refX: 10, // must be absolute because of setText() below
+				refX: 5, // must be absolute because of setText() below
 				refY: '50%'
 			},
 			body: {
@@ -172,43 +238,44 @@ ecore = function () {
 			}
 		}
 	}, {
-		breakTextWidth: 300, // custom attr
-
 		setText: function (newText) {
+			var breakTextWidth = 300;
+			var textStyle = {
+				"font-size": this.attr("label/fontSize"),
+				"font-family": this.attr("label/fontFamily")
+			};
 
 			// split the text into different lines (up to the allowed width)
 			var brokenText = joint.util.breakText(
-				newText,
-				{ width: this.breakTextWidth },
-				{
-					"font-size": this.attr("label/fontSize"),
-					"font-family": this.attr("label/fontFamily")
-				});
+					newText, { width: breakTextWidth }, textStyle);
 			this.attr("label/text", brokenText);
 
 			// set the model size according to the text size
-			var padding = 15;
-			var lineVerticalSize = 10;
-			var charHorizontalSize = 7.5;
+			var padding = 10;
+			var lineVerticalSize = this.attr("label/fontSize");
 			var lines = brokenText.split(/\n/)
 			var numLines = lines.length
 
 			var size = this.get("size");
 			size.height = numLines * lineVerticalSize + padding;
-			if (numLines > 1) {
-				var maxLength = 0;
-				lines.forEach(function (line) {
-					if (line.length > maxLength) {
-						maxLength = line.length;
-					}
-				});
-				size.width =
-					maxLength * charHorizontalSize + this.attr("label/refX");
-			}
-			else {
-				size.width =
-					newText.length * charHorizontalSize + this.attr("label/refX");
-			}
+
+
+			var maxWidth = 0;
+			// this svg doc is created to improve performance of computeTextWidth
+			var svgDocument = V('svg').node;
+			document.body.appendChild(svgDocument);
+			lines.forEach(function (line) {
+				var lineWidth = util.computeTextWidth(
+						line,
+						textStyle,
+						{ svgDocument : svgDocument});
+				if (lineWidth > maxWidth) {
+					maxWidth = lineWidth;
+				}
+			});
+			document.body.removeChild(svgDocument);
+			// Also add padding for each side
+			size.width = maxWidth + this.attr("label/refX") * 2;
 		},
 
 		createLinkFrom: function (node) {
