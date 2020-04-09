@@ -1,6 +1,9 @@
 // custom shapes to visualise ecore diagrams
 var ecore = function () {
 
+	/**
+	 * Utility functions
+	 */
 	var util = function() {
 
 		// calculate with of text by using a temporal svg element
@@ -53,6 +56,10 @@ var ecore = function () {
 		}
 	}();
 
+	/**
+	 * jointjs Paper diagram creation
+	 */
+
 	var createClassDiagram = function () {
 		return new joint.dia.Paper({
 			el: document.getElementById('paper'),
@@ -75,6 +82,10 @@ var ecore = function () {
 			// , interactive: false // disables ALL interactions with the graph
 		});
 	}
+
+	/**
+	 * Nodes
+	 */
 
 	var EClass = joint.shapes.basic.Generic.define('ecore.EClass', {
 		attrs: {
@@ -208,21 +219,6 @@ var ecore = function () {
 		}
 	});
 
-	// A -> B represents  "A supertypeOf B"
-	var Generalization = joint.dia.Link.define('ecore.Generalization', {
-		attrs: { '.marker-source': { d: 'M 10 0 L 0 7 L 10 14 z', fill: 'white' } }
-	});
-
-	var EReference = joint.dia.Link.define('ecore.EReference');
-
-	var containmentRefAttrs = {
-		'.marker-source': { d: 'M 14 4 L 7 8 L 0 4 L 7 0 z', fill: 'black' }
-	};
-
-	var unidirectionalRefAttrs = {
-		'.marker-target': { d: 'M 10 0 L 0 5 L 10 10 L 5 5 L 10 0 z', fill: 'black' }
-	};
-
 	var CustomTextBox = joint.shapes.standard.Rectangle.define('ecore.CustomTextBox', {
 		attrs: {
 			label: {
@@ -279,16 +275,9 @@ var ecore = function () {
 		},
 
 		createLinkFrom: function (node) {
-			var link = new joint.dia.Link();
+			var link = new DashedLink();
 			link.source(node);
 			link.target(this);
-			// TODO: styling the link is currently not working, don't know why
-			link.attr({
-				line: {
-					strokeDasharray: '5 5',
-					strokeDashoffset: 7.5
-				}
-			});
 			return link;
 		}
 	});
@@ -316,6 +305,87 @@ var ecore = function () {
 			}
 		}
 	});
+
+	/*********
+	 * Links *
+	 *********/
+
+	var CustomLink = joint.shapes.standard.Link.define("ecore.customLink", {
+		attrs: {
+			line: {
+				targetMarker: null
+			}
+		}
+	},
+	{
+		initTools: function (paper) {
+			var linkView = this.findView(paper);
+			linkView.addTools(new joint.dia.ToolsView({
+				tools: [
+					new joint.linkTools.Vertices(),
+					new joint.linkTools.Segments(),
+					new joint.linkTools.Boundary(),
+					new joint.linkTools.SourceAnchor(),
+					new joint.linkTools.TargetAnchor()
+				]
+			}));
+			linkView.hideTools(); // made visible through paper mouse events
+		}
+	});
+
+	var DashedLink = CustomLink.define("ecore.dashedLink", {
+		attrs: {
+			line: {
+				stroke: "grey",
+				strokeWidth: 1,
+				strokeDasharray: "5 5",
+				strokeDashoffset: 7.5,
+			}
+		}
+	});
+
+	// A -> B represents  "A supertypeOf B"
+	var Generalization = CustomLink.define('ecore.Generalization', {
+		attrs: {
+			line: {
+				strokeWidth: 1,
+				sourceMarker: {
+					"type": "path",
+					"d": "M 10 -5 0 0 10 5 z",
+					"fill": "white",
+				}
+			} }
+	});
+
+	var EReference = CustomLink.define('ecore.EReference');
+
+	/**
+	 * Link attributes to include in EReferences to achieve different styles
+	 *
+	 * Inclusion example: link.attr(containmentRefAttrs)
+	 */
+
+	var containmentRefAttrs = {
+		line: {
+			sourceMarker: {
+				'type': 'path',
+				'd': 'M 14 0 7 -4 0 0 7 4 14 0 z'
+			}
+		}
+	};
+
+	var unidirectionalRefAttrs = {
+		line: {
+			targetMarker: {
+				'type': 'path',
+				'd': 'M 10 -5 0 0 10 5 5 0 10 -5 Z'
+			}
+		}
+	};
+
+	/**
+	 * Exported elements
+	*/
 
 	return {
 		createClassDiagram: createClassDiagram,

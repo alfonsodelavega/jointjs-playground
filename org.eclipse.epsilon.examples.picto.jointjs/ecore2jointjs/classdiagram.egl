@@ -35,8 +35,8 @@ var classes = getVisibleClasses();%]
 		var paper = ecore.createClassDiagram();
 
 		var classes = {};
-		var relations = {};
-		var doc, constraint;
+		var links = {};
+
 		// for greater performance, the diagram is not updated
 		//   until every element has been created and positioned
 		paper.freeze();
@@ -62,6 +62,7 @@ var classes = getVisibleClasses();%]
 			[%if ((main.isDefined() and c == main) or main.isUndefined()){%]
 				[** Create nodes for all the constraints of the class*]
 				[%if (isLayerActive("constraints")){%]
+				index = 0;
 				[%for (constraint in module.constraintContexts.select(ctx|ctx.typeName=c.name).collect(ctx|ctx.constraints).flatten()){%]
 					[%if (constraint.isCritique()) {%]
 						constraint = new ecore.Critique();
@@ -70,7 +71,9 @@ var classes = getVisibleClasses();%]
 					[%}%]
 					constraint.setText("[%=constraint.getConstraintLabel()%]");
 					constraint.addTo(graph);
-					constraint.createLinkFrom(classes.[%=c.getNodeName()%]).addTo(graph);
+					constrName = "[%=c.getNodeName() + "_c"%]" + index;
+					index += 1;
+					links[constrName] = constraint.createLinkFrom(classes.[%=c.getNodeName()%]);
 				[%}%]
 				[%}%]
 
@@ -81,14 +84,15 @@ var classes = getVisibleClasses();%]
 					doc = new ecore.Documentation();
 					doc.setText("[%=documentation%]");
 					doc.addTo(graph);
-					doc.createLinkFrom(classes.[%=c.getNodeName()%]).addTo(graph);
+					docName = "[%=c.getNodeName() + "_doc"%]";
+					links[docName] = doc.createLinkFrom(classes.[%=c.getNodeName()%]);
 				[%}%]
 				[%}%]
 
 				[** Create edges for the supertypes of the class **]
 				[%if (isLayerActive("supertypes")){%]
 				[%for (s in c.eSuperTypes.select(s|classes.includes(s))){%]
-					relations["[%=s.getNodeName()%]-isSuperTypeOf-[%=c.getNodeName()%]"] = new ecore.Generalization({
+					links["[%=s.getNodeName()%]-isSuperTypeOf-[%=c.getNodeName()%]"] = new ecore.Generalization({
 						source: {
 							id: classes.[%=s.getNodeName()%].id
 						},
@@ -102,7 +106,7 @@ var classes = getVisibleClasses();%]
 				[** ... and for its subtypes **]
 				[%if (isLayerActive("subtypes") and main.isDefined()){%]
 				[%for (s in classes.select(cl|cl.eSuperTypes.includes(c))){%]
-					relations["[%=c.getNodeName()%]-isSuperTypeOf-[%=s.getNodeName()%]"] = new ecore.Generalization({
+					links["[%=c.getNodeName()%]-isSuperTypeOf-[%=s.getNodeName()%]"] = new ecore.Generalization({
 						source: {
 							id: classes.[%=c.getNodeName()%].id
 						},
@@ -117,14 +121,13 @@ var classes = getVisibleClasses();%]
 
 		[* Finally, add the EReferences *]
 		[%for (r in getUnidirectionalReferences()) {%]
-			relations.[%=r.getNodeName()%] = new ecore.EReference({
+			links.[%=r.getNodeName()%] = new ecore.EReference({
 				source: {
 					id: classes.[%=r.eContainer.getNodeName()%].id
 				},
 				target: {
 					id: classes.[%=r.eType.getNodeName()%].id
-				},
-				attrs: ecore.unidirectionalRefAttrs
+				}
 				[%if (isLayerActive("referenceLabels")){%]
 				,labels: [{
 					attrs: {
@@ -135,14 +138,15 @@ var classes = getVisibleClasses();%]
 						}
 					}]
 				[%}%]
-				});
+			});
+			links.[%=r.getNodeName()%].attr(ecore.unidirectionalRefAttrs);
 			[% if (r.containment) {%]
 				// append containment attributes
-				relations.[%=r.getNodeName()%].attr(ecore.containmentRefAttrs);
+				links.[%=r.getNodeName()%].attr(ecore.containmentRefAttrs);
 			[%}%]
 		[%}%]
 		[%for (r in getBidirectionalReferences()) {%]
-			relations.[%=r.getNodeName()%] = new ecore.EReference({
+			links.[%=r.getNodeName()%] = new ecore.EReference({
 				source: {
 					id: classes.[%=r.eContainer.getNodeName()%].id
 				},
@@ -171,26 +175,47 @@ var classes = getVisibleClasses();%]
 			});
 			[% if (r.containment) {%]
 				// append containment attributes
-				Object.assign(relations.[%=r.getNodeName()%].get("attrs"), ecore.containmentRefAttrs)
+				links.[%=r.getNodeName()%].attr(ecore.containmentRefAttrs);
 			[%}%]
 		[%}%]
 
-		Object.keys(relations).forEach(function(key) {
-			graph.addCell(relations[key]);
+		Object.keys(links).forEach(function(key) {
+			graph.addCell(links[key]);
 		});
 
 		// automatic layout of the diagram
+		// https://resources.jointjs.com/docs/jointjs/v3.1/joint.html#layout.DirectedGraph
 		joint.layout.DirectedGraph.layout(graph, {
 			// necessary variables for the autolayout
 			dagre: dagre,
 			graphlib: dagre.graphlib,
-			// any additional options would go here
-			nodeSep: 50,
-			edgeSep: 80,
-			rankDir: "LR" // "TB" / "BT" / "LR" / "RL"
+			// any additional options would go here (very good options to parametrize in egx)
+			rankSep: 60, // sep between the ranks (each level of top-bottom, left-right, etc.)
+			nodeSep: 40, // sep between nodes in a rank
+			edgeSep: 20,
+			marginX: 5,  // margin with the window borders
+			marginY: 5,  // margin with the window borders
+			setVertices: true, // fix vertices position in nodes
+			setLabels: false, // fix labels position
+			rankDir: "TB", // "TB" / "BT" / "LR" / "RL"
+			ranker: 'network-simplex' // how to assign ranks to nodes. Others: 'tight-tree' or 'longest-path'
 		});
 		paper.unfreeze();
 		paper.fitToContent();
+
+		// link tools setup
+		Object.keys(links).forEach(function(key) {
+			links[key].initTools(paper);
+		});
+
+		paper.on('link:mouseenter', function (linkView) {
+			linkView.showTools();
+		});
+
+		// sneaky mouse listener, allows moving link anchors in elements
+		paper.on('blank:mouseover', function(linkView) {
+			paper.hideTools();
+		});
 
 	</script>
 </body>
