@@ -161,12 +161,12 @@ var ecore = function () {
 
 			var accumulatedHeight = 0;
 
-			// TODO: hide methods rectangle if it is empty (as usually)
 			rects.forEach(function (rect) {
 
 				var lines = Array.isArray(rect.text) ? rect.text : [rect.text];
 				var rectHeight;
-				if (lines.length == 0) {
+				// hide methods rectangle if it is empty (as usually)
+				if (rect.type == "methods" && lines.length == 0) {
 					rectHeight = 0;
 				}
 				else {
