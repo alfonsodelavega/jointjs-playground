@@ -165,10 +165,15 @@ var ecore = function () {
 			rects.forEach(function (rect) {
 
 				var lines = Array.isArray(rect.text) ? rect.text : [rect.text];
-				var rectHeight =
+				var rectHeight;
+				if (lines.length == 0) {
+					rectHeight = 0;
+				}
+				else {
+					rectHeight =
 						lines.length * fontSize
 						+ 2 * attrs[".eclass-attrs-text"]["ref-y"];
-
+				}
 
 				attrs['.eclass-' + rect.type + '-text'].text = lines.join('\n');
 				attrs['.eclass-' + rect.type + '-rect'].height = rectHeight;
