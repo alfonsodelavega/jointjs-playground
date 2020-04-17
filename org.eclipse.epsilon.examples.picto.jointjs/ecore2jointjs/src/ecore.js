@@ -75,10 +75,11 @@ var ecore = function () {
 				name: 'manhattan',
 				args: {
 					step: 5,
-					padding: 15
+					padding: 12
 				}
 			},
 			restrictTranslate: true // prevent elements from moving outside the paper area
+			, interactive: { labelMove: true }
 			// , interactive: false // disables ALL interactions with the graph
 		});
 	}
@@ -388,6 +389,7 @@ var ecore = function () {
 	*/
 
 	return {
+		util: util,
 		createClassDiagram: createClassDiagram,
 		EClass: EClass,
 		EReference: EReference,

@@ -131,12 +131,13 @@ var classes = getVisibleClasses();%]
 				[%if (isLayerActive("referenceLabels")){%]
 				,labels: [{
 					attrs: {
-						text: { text: '[%=r.getReferenceLabel()%]' }},
-						position: {
-							offset: 15,
-							distance: 0.7
-						}
+						text: { text: '[%=r.getReferenceLabel()%]' }
+					}
+					,position: {
+						distance: 0.7
+					}
 					}]
+				, labelSize: {width: ecore.util.computeTextWidth('[%=r.getReferenceLabel()%]'), height: 20}
 				[%}%]
 			});
 			links.[%=r.getNodeName()%].attr(ecore.unidirectionalRefAttrs);
@@ -157,20 +158,21 @@ var classes = getVisibleClasses();%]
 				,labels: [
 					{
 						attrs: {
-						text: { text: '[%=r.getReferenceLabel()%]' }},
-						position: {
-							offset: -15,
-							distance: 0.8
+							text: { text: '[%=r.getReferenceLabel()%]' }
+						}
+						,position: {
+							distance: 0.7
 						}
 					},
 					{
 						attrs: {
-						text: { text: '[%=r.eOpposite.getReferenceLabel()%]' }},
-						position: {
-							offset: 15,
-							distance: 0.2
+							text: { text: '[%=r.eOpposite.getReferenceLabel()%]' }
+						}
+						,position: {
+							distance: 0.3
 						}
 					}]
+				, labelSize: {width: ecore.util.computeTextWidth('[%=r.getReferenceLabel()%]'), height: 20}
 				[%}%]
 			});
 			[% if (r.containment) {%]
@@ -190,13 +192,13 @@ var classes = getVisibleClasses();%]
 			dagre: dagre,
 			graphlib: dagre.graphlib,
 			// any additional options would go here (very good options to parametrize in egx)
-			rankSep: 60, // sep between the ranks (each level of top-bottom, left-right, etc.)
-			nodeSep: 40, // sep between nodes in a rank
-			edgeSep: 20,
+			//rankSep: 60, // sep between the ranks (each level of top-bottom, left-right, etc.)
+			//nodeSep: 60, // sep between nodes in a rank
+			//edgeSep: 40,
 			marginX: 5,  // margin with the window borders
 			marginY: 5,  // margin with the window borders
 			setVertices: true, // fix vertices position in nodes
-			setLabels: false, // fix labels position
+			setLabels: false, // fix labels position (bad idea with bidirectional references)
 			rankDir: "TB", // "TB" / "BT" / "LR" / "RL"
 			ranker: 'network-simplex' // how to assign ranks to nodes. Others: 'tight-tree' or 'longest-path'
 		});
